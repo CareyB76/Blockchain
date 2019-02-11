@@ -219,7 +219,7 @@ class BlockController {
     postValidatioRequest() {
         this.server.route({
             method: 'POST',
-            path: '/requestvalidation',
+            path: '/requestValidation',
             handler: (request, h) => {
                 return new Promise ((resolve,reject)=>{
                     var ctype = request.headers["content-type"];
@@ -253,7 +253,6 @@ class BlockController {
                     if (!walletAddress || walletAddress.length === 0) {
                         reject(Boom.badRequest("Bad Request expecting {\"address\":\"block body\"}")); 
                     } else {
-                        console.log ("here here");
                         self.mempool.validateWalletRequest(walletAddress,sig).then ((validationResult)=>{
                             resolve(JSON.stringify(validationResult));
                         });

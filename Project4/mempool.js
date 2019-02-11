@@ -4,44 +4,33 @@ const requestsWindowTime = 5*60*1000;
 
 class Mempool {
 	constructor(){
-		let self = this;
-        this.mempool = {};
-        this.validationRequests = {};
+		this.validationRequests = {};
 		this.validRequests = {};
         this.timeoutRequests = {};
 	}
 
 	requestValidation (walletAddress){
-        var request = this.validationRequests[walletAddress];
+        let request = this.validationRequests[walletAddress];
         if (!request)
         {
+            this.timeoutRequests[walletAddress]=setTimeout(()=>{
+                this.deleteValidationRequest(walletAddress) 
+            }, requestsWindowTime);
             request = new ValidationRequest(walletAddress);
             this.validationRequests[walletAddress] = request;
-            this.timeoutRequests[walletAddress]=setTimeout(()=>{
-                        this.removeValidationRequest(walletAddress) 
-                    }, requestsWindowTime);
         }
         request.validationWindow = request.ValidationWindow();
         return request;
   	}
 	
-	removeValidationRequest(walletAddress) {
-		delete this.validationRequests[walletAddress];
-		delete this.validRequests[walletAddress];
-	}
-
 	validateWalletRequest (walletAddress, signature){
-        return new Promise ((resolve,reject) => {
-            if (!this.verifyTimeLeft(walletAddress))
-            {
-                reject(null);
-            }
-            var request = this.validationRequests[walletAddress];
+        return new Promise ((resolve, reject) => {
+            const request = this.validationRequests[walletAddress];
             if (!request)
             {
                 reject(null);
             }
-            this.verifyAddressRequest(request.walletAddress,request.message,signature). then ((addressRquestResult)=>{
+            this.verifyMessageSignature(request.walletAddress,request.message,signature). then ((addressRquestResult)=>{
                 const validationResult = {
                     registerStar:addressRquestResult,
                     status : {
@@ -56,18 +45,26 @@ class Mempool {
                 {
                     this.validRequests[walletAddress] = validationResult;
                     delete this.validationRequests[walletAddress];
+                    delete this.timeoutRequests[walletAddress];
                 }
                 resolve (validationResult);
             });
         });
     }
+
+    deleteValidationRequest(walletAddress) {
+		delete this.validationRequests[walletAddress];
+        delete this.validRequests[walletAddress];
+        delete this.timeoutRequests[walletAddress];
+    }
     
-	verifyAddressRequest(address,message,signature) {
-        return new Promise ((resolve,reject)=>{
+	verifyMessageSignature(address,message,signature) {
+        return new Promise ((resolve, reject) => {
 			const verified = bitcoinMessage.verify(message, address, signature); 
             resolve (verified);
 		});
-	}
+    }
+    
 	isValidWalletRequest (walletAddress) {
         let request = this.validRequests[walletAddress];
         if (request) {
@@ -75,13 +72,6 @@ class Mempool {
         }
         return false;
     }
-
-	verifyTimeLeft(wallet){
-		if (this.validationRequests[wallet]) {
-            return true;
-		}
-		return false;
-	}
 
 	removeValidWalletRequest(walletAddress){
         delete this.validRequests[walletAddress];
