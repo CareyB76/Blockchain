@@ -45,7 +45,7 @@ class BlockController {
                             if (blockIndex <=chainHeight && blockIndex >-1)
                             {
                                 this.blockChain.getBlock(blockIndex).then ((block)=>{
-                                    resolve(JSON.stringify(block));
+                                    resolve(block);
                                 });
                             } else {
                             reject(Boom.badRequest());
@@ -74,7 +74,7 @@ class BlockController {
                         reject(Boom.badRequest("Bad Request expecting {\"data\":\"block body\"}"));
                     } else {
                         this.blockChain.addBlock(new BlockClass.Block(blockdata)).then ((newblock)=>{
-                            resolve (JSON.stringify(newblock));
+                            resolve (newblock);
                         });
                     }
                 });
@@ -138,7 +138,7 @@ class BlockController {
                         reject( Boom.badRequest("You must provide the hash parameter"));
                     } else {
                         this.blockChain.getBlockByHash(hash).then ((block) =>{
-                            resolve(JSON.stringify(block));            
+                            resolve(block);            
                         }).catch ((message)=> {reject( Boom.badRequest("Block not found check hash parameter"))});
                     }
                 })
@@ -157,7 +157,7 @@ class BlockController {
                         return Boom.badRequest("You must provide the wallet address");
                     } else {
                         this.blockChain.getBlocksByWallet(address).then ((blocks)=>{
-                            resolve(JSON.stringify(blocks));
+                            resolve(blocks);
                         }).catch ((message)=> {reject( Boom.badRequest("Blocks not found check wallet address parameter"))});
                     }
                 });
@@ -230,7 +230,7 @@ class BlockController {
                     if (!address || address.length === 0) {
                         reject(Boom.badRequest("Bad Request expecting {\"address\":\"wallet address\"}")); 
                     } 
-                    resolve (JSON.stringify(this.mempool.requestValidation(address)));
+                    resolve (this.mempool.requestValidation(address));
                 });
             }
         })
@@ -254,7 +254,7 @@ class BlockController {
                         reject(Boom.badRequest("Bad Request expecting {\"address\":\"block body\"}")); 
                     } else {
                         self.mempool.validateWalletRequest(walletAddress,sig).then ((validationResult)=>{
-                            resolve(JSON.stringify(validationResult));
+                            resolve(validationResult);
                         });
                     }
                 });
